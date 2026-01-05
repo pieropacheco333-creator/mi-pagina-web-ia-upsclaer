@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <title>PIERO AI PREMIER</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 body{
@@ -11,42 +14,61 @@ body{
   color:white;
   transition:0.3s;
 }
-body.light{
-  background:#f5f5f5;
-  color:#111;
-}
+body.light{ background:#f5f5f5; color:#111; }
 
-/* ===== HEADER ===== */
+/* HEADER */
 .header-box{
   width:100%;
-  height:20vh;
-  background: linear-gradient(135deg,#928dab,#1f1c2c);
+  height:25vh;
+  background: linear-gradient(135deg,#1f1c2c,#928dab);
   display:flex;
+  flex-direction:column;
   align-items:center;
   justify-content:center;
-  font-size:3.5vh;
-  font-weight:bold;
+  font-family: 'Montserrat', sans-serif;
+  font-size:6vh;
+  font-weight:700;
   letter-spacing:2px;
-  color:white;
-  cursor:pointer;
-  overflow:hidden;
+  color:#ffffff;
+  text-align:center;
   position:relative;
-  transition:transform 0.3s;
+  overflow:hidden;
+  transition: transform 0.3s;
+  cursor:pointer;
 }
-.header-box:hover{transform: scale(1.02);}
+.header-box:hover{ transform: scale(1.02); }
 .header-box::before{
   content:"";
-  position:absolute;top:0;left:0;width:200%;height:200%;
-  background:transparent url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200"><circle cx="10" cy="10" r="1" fill="%23ffffff"/><circle cx="50" cy="80" r="1" fill="%23ffffff"/><circle cx="120" cy="40" r="1" fill="%23ffffff"/><circle cx="170" cy="150" r="1" fill="%23ffffff"/><circle cx="60" cy="160" r="1" fill="%23ffffff"/><circle cx="180" cy="20" r="1" fill="%23ffffff"/><circle cx="90" cy="110" r="1" fill="%23ffffff"/><circle cx="30" cy="60" r="1" fill="%23ffffff"/></svg>') repeat;
-  animation:moveStars 60s linear infinite;
-  opacity:0.4;
+  position:absolute;
+  top:0; left:0; width:200%; height:200%;
+  background:transparent url('data:image/svg+xml;utf8,\
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200">\
+<circle cx="10" cy="10" r="1.2" fill="%23ffffff"/><circle cx="50" cy="80" r="0.8" fill="%23ffffff"/>\
+<circle cx="120" cy="40" r="1.5" fill="%23ffffff"/><circle cx="170" cy="150" r="1" fill="%23ffffff"/>\
+<circle cx="60" cy="160" r="0.7" fill="%23ffffff"/><circle cx="180" cy="20" r="1.2" fill="%23ffffff"/>\
+<circle cx="90" cy="110" r="1" fill="%23ffffff"/><circle cx="30" cy="60" r="1.3" fill="%23ffffff"/>\
+<circle cx="140" cy="90" r="0.9" fill="%23ffffff"/><circle cx="20" cy="140" r="1.1" fill="%23ffffff"/>\
+</svg>') repeat;
+  animation: moveStars 60s linear infinite;
+  opacity:0.5;
   pointer-events:none;
 }
-.header-box:hover::before{animation:moveStarsHover 10s linear infinite;}
-@keyframes moveStars{from{transform:translate(0,0);}to{transform:translate(-50px,-50px);}}
-@keyframes moveStarsHover{from{transform:translate(0,0);}to{transform:translate(-100px,-100px);}}
+.header-box:hover::before{ animation: moveStarsHover 10s linear infinite; }
+@keyframes moveStars{ from{transform:translate(0,0);} to{transform:translate(-100px,-100px);} }
+@keyframes moveStarsHover{ from{transform:translate(0,0);} to{transform:translate(-200px,-200px);} }
 
-/* ===== INTERRUPTORES ===== */
+/* DESCRIPCIÓN */
+.description{
+  text-align:center;
+  font-family:'Poppins', sans-serif;
+  font-size:1em;
+  margin:40px auto 50px auto;
+  color:#fff;
+  max-width:800px;
+}
+body.light .description{ color:#111; }
+
+/* INTERRUPTORES */
 .switches{
   position:fixed;
   top:15px;
@@ -78,7 +100,7 @@ body.light{
 input:checked + .slider{background:#00d2ff;}
 input:checked + .slider::before{transform:translateX(14px);}
 
-/* ===== CONTENEDORES ===== */
+/* CONTENEDORES */
 .main-container{
   display:flex;
   justify-content:center;
@@ -99,28 +121,20 @@ input:checked + .slider::before{transform:translateX(14px);}
   overflow:hidden;
   transition:0.3s, box-shadow 0.3s;
   cursor:pointer;
-}
-
-/* COLOR UNIFORME PARA LOS 2 RECUADROS */
-.video-box{
   background:#222;
 }
-body.light .video-box{
-  background:#ccc;
-}
-
+body.light .video-box{ background:#ccc; }
 .video-box h3{margin-bottom:10px; z-index:10; position:relative;}
-
-/* Video adaptativo */
 .video-box video{
   width:100%;
   height:auto;
   border-radius:10px;
   max-height:80vh;
   object-fit:contain;
+  transition: filter 0.3s;
 }
 
-/* ===== BOTONES ===== */
+/* BOTONES */
 .upload-btn{
   padding:12px 25px;
   background:#333;
@@ -138,7 +152,7 @@ body.light .video-box{
   box-shadow:0 0 10px rgba(0,0,0,0.7);
 }
 .process-btn{
-  margin:30px auto 50px auto;
+  margin:30px auto 10px auto;
   display:block;
   padding:15px 35px;
   background:#222;
@@ -148,23 +162,35 @@ body.light .video-box{
   font-weight:bold;
   font-size:16px;
   cursor:pointer;
-  transition:0.3s;
+  transition:0.3s, box-shadow 0.3s;
 }
 .process-btn:hover{
   transform:scale(1.05);
-  box-shadow:0 0 15px rgba(0,210,255,0.5);
+  box-shadow:0 0 10px rgba(100,100,100,0.5);
+}
+#cancelBtn{ background:#aa2222 !important; }
+#downloadBtn{
+  display:none;
+  margin:10px auto 50px auto;
+  padding:12px 30px;
+  background:#00d2ff;
+  color:#000;
+  font-weight:bold;
+  border:none;
+  border-radius:25px;
+  cursor:pointer;
+  transition:0.3s;
+}
+#downloadBtn:hover{
+  transform:scale(1.05);
+  box-shadow:0 0 10px rgba(0,210,255,0.5);
 }
 
-/* BOTÓN CANCELAR */
-#cancelBtn{
-  background:#aa2222 !important;
-}
-
-/* ===== OVERLAY BORROSO ===== */
+/* OVERLAY */
 .loading-overlay{
   position:absolute;
   top:0; left:0; width:100%; height:100%;
-  background: rgba(10,10,10,0.6);
+  background: rgba(10,10,10,0.4);
   display:flex;
   flex-direction:column;
   align-items:center;
@@ -176,14 +202,13 @@ body.light .video-box{
   z-index:5;
 }
 .circle-loader{
-  width:50px;height:50px;border:5px solid #00d2ff;
-  border-top:5px solid rgba(0,210,255,0.2);
+  width:40px;height:40px;border:4px solid #fff;
+  border-top:4px solid rgba(255,255,255,0.2);
   border-radius:50%;
   animation:spin 1s linear infinite;
   margin-bottom:10px;
 }
-@keyframes spin{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
-
+@keyframes spin{from{transform:rotate(0deg);}to{transform:rotate(360deg);} }
 
 footer{
   text-align:center;
@@ -196,10 +221,10 @@ body.light footer{color:#555;}
 </head>
 <body>
 
-<!-- INTERRUPTORES FIJOS -->
+<!-- INTERRUPTORES -->
 <div class="switches">
-  <label class="switch" id="darkLabel">🌙
-    <input type="checkbox" id="darkSwitch" checked>
+  <label class="switch" id="darkLabel"><span id="darkEmoji">🌙</span>
+    <input type="checkbox" id="darkSwitch">
     <span class="slider"></span>
   </label>
   <label class="switch">EN/ES
@@ -211,18 +236,20 @@ body.light footer{color:#555;}
 <!-- HEADER -->
 <div class="header-box" id="title">PIERO AI PREMIER</div>
 
-<!-- MAIN CONTENT -->
+<!-- DESCRIPCIÓN -->
+<div class="description" id="descriptionText">
+Piero AI Premier uses advanced AI to upscale your videos to 4K quickly. Upload your MP4 file or drag it into the box labeled <strong>Video Original</strong>.
+</div>
+
+<!-- MAIN -->
 <div class="main-container">
-  <!-- VIDEO ORIGINAL -->
   <div class="video-box" id="dropOriginal">
-    <h3 id="labelOriginal">Original Video</h3>
+    <h3 id="labelOriginal">Video Original</h3>
     <video id="videoOriginal" controls style="display:none;"></video>
     <button class="upload-btn" id="uploadBtn">Upload Video</button>
     <button class="upload-btn" id="cancelBtn" style="display:none;">Cancel</button>
     <input type="file" id="videoInput" accept="video/*" style="display:none;">
   </div>
-
-  <!-- VIDEO 4K -->
   <div class="video-box" id="drop4k">
     <h3 id="label4k">4K Video</h3>
     <div class="loading-overlay" id="loadingOverlay">
@@ -233,15 +260,16 @@ body.light footer{color:#555;}
   </div>
 </div>
 
-<!-- BOTÓN ESCALAR -->
+<!-- BOTONES -->
 <button class="process-btn" id="processBtn">Scale to 4K</button>
+<button id="downloadBtn">Download 4K Video</button>
 
-<!-- FOOTER -->
 <footer>Created by Piero Pahceco &copy; 2026</footer>
 
 <script>
+// Variables
 const darkSwitch = document.getElementById("darkSwitch");
-const darkLabel = document.getElementById("darkLabel");
+const darkEmoji = document.getElementById("darkEmoji");
 const langSwitch = document.getElementById("langSwitch");
 const uploadBtn = document.getElementById("uploadBtn");
 const cancelBtn = document.getElementById("cancelBtn");
@@ -251,67 +279,46 @@ const processBtn = document.getElementById("processBtn");
 const video4k = document.getElementById("video4k");
 const loadingOverlay = document.getElementById("loadingOverlay");
 const progressText = document.getElementById("progressText");
-
+const descriptionText = document.getElementById("descriptionText");
+const downloadBtn = document.getElementById("downloadBtn");
 const labelOriginal = document.getElementById("labelOriginal");
 const label4k = document.getElementById("label4k");
 const dropOriginal = document.getElementById("dropOriginal");
 
-// DARK MODE con luna/sol
+// DARK MODE
+document.body.classList.remove("light");
+darkSwitch.checked = false;
+darkEmoji.textContent = "🌙";
 darkSwitch.addEventListener("change", ()=>{
-    document.body.classList.toggle("light", !darkSwitch.checked);
-    darkLabel.childNodes[0].nodeValue = darkSwitch.checked ? "🌙" : "☀️";
+    document.body.classList.toggle("light", darkSwitch.checked);
+    darkEmoji.textContent = darkSwitch.checked ? "☀️" : "🌙";
 });
 
-// IDIOMA
-langSwitch.addEventListener("change",()=>{
-  if(langSwitch.checked){
-    processBtn.textContent="Escalar a 4K";
-    uploadBtn.textContent="Subir Video";
-    cancelBtn.textContent="Cancelar";
-    labelOriginal.textContent="Video Original";
-    label4k.textContent="Video 4K";
-    document.querySelector('footer').textContent="Creado por Piero Pahceco © 2026";
-  }else{
-    processBtn.textContent="Scale to 4K";
-    uploadBtn.textContent="Upload Video";
-    cancelBtn.textContent="Cancel";
-    labelOriginal.textContent="Original Video";
-    label4k.textContent="4K Video";
-    document.querySelector('footer').textContent="Created by Piero Pahceco © 2026";
-  }
-});
+// LANGUAGE
+function updateLanguage(lang){
+    if(lang==="es"){
+        processBtn.textContent="Escalar a 4K";
+        uploadBtn.textContent="Subir Video";
+        cancelBtn.textContent="Cancelar";
+        labelOriginal.textContent="Video Original";
+        label4k.textContent="4K Video";
+        descriptionText.innerHTML="Piero AI Premier utiliza IA avanzada para escalar tus videos a 4K rápidamente. Sube tu archivo MP4 o arrástralo al recuadro con el nombre <strong>Video Original</strong>.";
+        downloadBtn.textContent="Descargar Video 4K";
+    }else{
+        processBtn.textContent="Scale to 4K";
+        uploadBtn.textContent="Upload Video";
+        cancelBtn.textContent="Cancel";
+        labelOriginal.textContent="Video Original";
+        label4k.textContent="4K Video";
+        descriptionText.innerHTML="Piero AI Premier uses advanced AI to upscale your videos to 4K quickly. Upload your MP4 file or drag it into the box labeled <strong>Video Original</strong>.";
+        downloadBtn.textContent="Download 4K Video";
+    }
+}
+langSwitch.addEventListener("change", ()=> updateLanguage(langSwitch.checked?"es":"en"));
 
-// SUBIDA VIDEO BOTÓN
-uploadBtn.addEventListener("click",()=>videoInput.click());
-videoInput.addEventListener("change",()=>{
-  const file = videoInput.files[0];
+// HANDLE FILE
+function handleFile(file){
   if(file){
-    const url = URL.createObjectURL(file);
-    videoOriginal.src = url;
-    videoOriginal.style.display="block";
-    uploadBtn.style.display="none";
-    cancelBtn.style.display="block";
-    videoOriginal.load();
-  }
-});
-
-// CANCELAR VIDEO
-cancelBtn.addEventListener("click",()=>{
-  videoOriginal.src = "";
-  videoOriginal.style.display = "none";
-  uploadBtn.style.display = "block";
-  cancelBtn.style.display = "none";
-  videoInput.value = "";
-});
-
-// DRAG & DROP
-dropOriginal.addEventListener("dragover",(e)=>{e.preventDefault(); dropOriginal.style.border="2px dashed #00d2ff";});
-dropOriginal.addEventListener("dragleave",(e)=>{e.preventDefault(); dropOriginal.style.border="none";});
-dropOriginal.addEventListener("drop",(e)=>{
-  e.preventDefault();
-  dropOriginal.style.border="none";
-  const file = e.dataTransfer.files[0];
-  if(file && file.type.startsWith("video")){
     const url = URL.createObjectURL(file);
     videoOriginal.src = url;
     videoOriginal.style.display="block";
@@ -320,53 +327,63 @@ dropOriginal.addEventListener("drop",(e)=>{
     videoOriginal.load();
     videoInput.files = fileList(file);
   }
-});
-function fileList(file){
-  const b = new DataTransfer();
-  b.items.add(file);
-  return b.files;
 }
+function fileList(file){ const b = new DataTransfer(); b.items.add(file); return b.files; }
 
-// PROCESAR 4K
-processBtn.addEventListener("click",async()=>{
-  const file = videoInput.files[0];
-  if(!file){alert(langSwitch.checked?"Selecciona un video":"Select a video");return;}
+// UPLOAD BUTTON
+uploadBtn.addEventListener("click", ()=>videoInput.click());
+videoInput.addEventListener("change", ()=> handleFile(videoInput.files[0]));
 
-  processBtn.disabled = true;
-  processBtn.textContent = langSwitch.checked?"Procesando...":"Processing...";
-  video4k.style.display = "none";
-  loadingOverlay.style.display = "flex";
-  progressText.textContent="0%";
-
-  const form = new FormData();
-  form.append("file", file);
-
-  try{
-    let progress = 0;
-    const interval = setInterval(()=>{
-      if(progress < 90){progress += 5; progressText.textContent = progress+"%";}
-    },200);
-
-    const res = await fetch("https://piero-ai-premier.onrender.com/upscale", {,{method:"POST", body: form});
-    if(!res.ok) throw new Error("Server error");
-
-    const data = await res.json();
-    clearInterval(interval);
-    progressText.textContent="100%";
-
-    video4k.src="http://127.0.0.1:8000"+data.video_url;
-    video4k.style.display="block";
-    video4k.load();
-
-  }catch(err){
-    alert("Error processing video / Error al procesar el video");
-    console.error(err);
-  }
-
-  loadingOverlay.style.display="none";
-  processBtn.disabled=false;
-  processBtn.textContent=langSwitch.checked?"Escalar a 4K":"Scale to 4K";
+// CANCEL
+cancelBtn.addEventListener("click", ()=>{
+  videoOriginal.src=""; videoOriginal.style.display="none";
+  uploadBtn.style.display="block"; cancelBtn.style.display="none";
+  videoInput.value=""; video4k.src=""; video4k.style.display="none";
+  downloadBtn.style.display="none";
+  video4k.style.filter="none";
 });
+
+// DRAG & DROP
+dropOriginal.addEventListener("dragover",(e)=>{ e.preventDefault(); dropOriginal.style.border="2px dashed #00d2ff"; });
+dropOriginal.addEventListener("dragleave",(e)=>{ e.preventDefault(); dropOriginal.style.border="none"; });
+dropOriginal.addEventListener("drop",(e)=>{ e.preventDefault(); dropOriginal.style.border="none"; handleFile(e.dataTransfer.files[0]); });
+
+// PROCESS 4K
+processBtn.addEventListener("click", async()=>{
+  const file = videoInput.files[0];
+  if(!file){ alert(langSwitch.checked?"Selecciona un video":"Select a video"); return; }
+
+  processBtn.disabled=true; 
+  processBtn.textContent=langSwitch.checked?"Procesando...":"Processing...";
+  video4k.style.display="block"; 
+  video4k.style.filter="blur(8px) brightness(0.7)"; 
+  loadingOverlay.style.display="flex"; 
+  progressText.textContent="0%";
+  downloadBtn.style.display="none";
+
+  const form=new FormData(); form.append("file",file);
+  try{
+    const res = await fetch("/upscale",{method:"POST",body:form});
+    const data = await res.json();
+
+    video4k.src = window.location.origin + data.video_url;
+    video4k.load();
+    video4k.style.filter="none";
+
+    downloadBtn.style.display="block";
+    downloadBtn.onclick = ()=> window.open(window.location.origin + data.video_url,"_blank");
+
+  }catch(err){ alert("Error processing video / Error al procesar el video"); console.error(err); }
+
+  loadingOverlay.style.display="none"; 
+  processBtn.disabled=false; 
+  processBtn.textContent = langSwitch.checked?"Escalar a 4K":"Scale to 4K";
+});
+
+// HEADER CLICK
+const header = document.getElementById("title");
+header.addEventListener("click",(e)=>{ if(e.ctrlKey) window.open(window.location.href,"_blank"); else location.reload(); });
+header.addEventListener("auxclick",(e)=>{ if(e.button===1) window.open(window.location.href,"_blank"); });
 </script>
 </body>
 </html>
