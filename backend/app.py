@@ -16,7 +16,7 @@ app.add_middleware(
 )
 
 # Montar frontend
-app.mount("/", StaticFiles(directory="../frontend", html=True), name="frontend")
+app.mount("/app", StaticFiles(directory=FRONTEND_DIR, html=True), name="frontend")
 
 # Carpeta para videos temporales
 UPLOAD_DIR = "uploads"
