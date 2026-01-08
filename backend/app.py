@@ -20,12 +20,15 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Servir frontend
-app.mount("/", StaticFiles(directory="../frontend", html=True), name="frontend")
-
 # Carpetas
 UPLOAD_DIR = "uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
+
+# SERVIR ARCHIVOS (Orden importante)
+# 1. Montamos la carpeta de videos procesados para que sean accesibles vía URL
+app.mount("/outputs", StaticFiles(directory=UPLOAD_DIR), name="outputs")
+# 2. Servir el frontend (asegúrate de que la carpeta ../frontend sea correcta)
+app.mount("/", StaticFiles(directory="../frontend", html=True), name="frontend")
 
 MAX_SIZE = 100 * 1024 * 1024  # 100MB
 FILE_LIFETIME = 3600  # 1 hora
@@ -45,26 +48,21 @@ def cleanup_uploads():
 
 threading.Thread(target=cleanup_uploads, daemon=True).start()
 
-
-# =========================
-# ESCALAR VIDEO MP4
-# =========================
 @app.post("/upscale")
 async def upscale_video(file: UploadFile = File(...)):
-
-    if not file.filename.endswith(".mp4"):
+    if not file.filename.lower().endswith(".mp4"):
         raise HTTPException(status_code=400, detail="Only MP4 videos are supported")
 
     input_path = os.path.join(UPLOAD_DIR, f"in_{uuid.uuid4()}.mp4")
-    output_path = os.path.join(UPLOAD_DIR, f"out_{uuid.uuid4()}.mp4")
+    output_filename = f"out_{uuid.uuid4()}.mp4"
+    output_path = os.path.join(UPLOAD_DIR, output_filename)
 
     with open(input_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
 
     cap = cv2.VideoCapture(input_path)
-
     if not cap.isOpened():
-        return {"error": "Cannot open video. Use standard MP4 (H.264)."}
+        return {"error": "Cannot open video."}
 
     fps = cap.get(cv2.CAP_PROP_FPS) or 30
     w = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
@@ -80,7 +78,8 @@ async def upscale_video(file: UploadFile = File(...)):
         new_h = target_h
         new_w = int(target_h * aspect)
 
-    fourcc = cv2.VideoWriter_fourcc(*"mp4v")
+    # CAMBIO CRÍTICO: Usar avc1 para compatibilidad con navegadores
+    fourcc = cv2.VideoWriter_fourcc(*'avc1')
     out = cv2.VideoWriter(output_path, fourcc, fps, (new_w, new_h))
 
     if not out.isOpened():
@@ -88,12 +87,10 @@ async def upscale_video(file: UploadFile = File(...)):
         return {"error": "Cannot write output video"}
 
     frames = 0
-
     while cap.isOpened():
         ret, frame = cap.read()
         if not ret:
             break
-
         resized = cv2.resize(frame, (new_w, new_h), interpolation=cv2.INTER_CUBIC)
         out.write(resized)
         frames += 1
@@ -102,18 +99,14 @@ async def upscale_video(file: UploadFile = File(...)):
     out.release()
 
     if frames == 0:
-        return {"error": "Unsupported codec. Use normal MP4 (H.264)."}
+        return {"error": "Processing failed."}
 
-    return {"video_url": f"/download/{os.path.basename(output_path)}"}
+    # Retornamos la URL que apunta a la montura /outputs
+    return {"video_url": f"/outputs/{output_filename}"}
 
-
-# =========================
-# DESCARGAR VIDEO
-# =========================
 @app.get("/download/{filename}")
 def download_video(filename: str):
     path = os.path.join(UPLOAD_DIR, filename)
     if not os.path.exists(path):
         raise HTTPException(status_code=404, detail="File not found")
-
     return FileResponse(path, media_type="video/mp4")
