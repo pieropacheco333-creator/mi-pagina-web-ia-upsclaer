@@ -1,6 +1,6 @@
 from fastapi import FastAPI, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 import cv2, shutil, uuid, os, time, threading
 
@@ -15,29 +15,36 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ===== RUTAS =====
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-FRONTEND_DIR = os.path.join(BASE_DIR, "../frontend")
-UPLOAD_DIR = os.path.join(BASE_DIR, "uploads")
+# ===== FRONTEND DIR =====
+FRONTEND_DIR = "../frontend"
 
-os.makedirs(UPLOAD_DIR, exist_ok=True)
-
-# ===== SERVIR FRONTEND EN /app =====
+# Montar frontend en /app
 app.mount("/app", StaticFiles(directory=FRONTEND_DIR, html=True), name="frontend")
 
-# ===== LIMPIEZA DE ARCHIVOS =====
-FILE_LIFETIME = 3600
+# Redirigir / -> /app
+@app.get("/")
+def root():
+    return RedirectResponse(url="/app")
 
+# ===== UPLOAD DIR =====
+UPLOAD_DIR = "uploads"
+os.makedirs(UPLOAD_DIR, exist_ok=True)
+
+MAX_SIZE = 50 * 1024 * 1024  # 50MB
+FILE_LIFETIME = 3600  # 1 hora
+
+# ===== LIMPIEZA AUTOMÁTICA =====
 def cleanup_uploads():
     while True:
         now = time.time()
         for filename in os.listdir(UPLOAD_DIR):
             path = os.path.join(UPLOAD_DIR, filename)
-            if os.path.isfile(path) and now - os.path.getmtime(path) > FILE_LIFETIME:
-                try:
-                    os.remove(path)
-                except:
-                    pass
+            if os.path.isfile(path):
+                if now - os.path.getmtime(path) > FILE_LIFETIME:
+                    try:
+                        os.remove(path)
+                    except:
+                        pass
         time.sleep(600)
 
 threading.Thread(target=cleanup_uploads, daemon=True).start()
@@ -72,6 +79,10 @@ async def upscale_video(file: UploadFile = File(...)):
     fourcc = cv2.VideoWriter_fourcc(*"mp4v")
     out = cv2.VideoWriter(output_path, fourcc, fps, (new_w, new_h))
 
+    if not out.isOpened():
+        cap.release()
+        return {"error": "Cannot write video"}
+
     while cap.isOpened():
         ret, frame = cap.read()
         if not ret:
@@ -84,7 +95,7 @@ async def upscale_video(file: UploadFile = File(...)):
 
     return {"video_url": f"/download/{os.path.basename(output_path)}"}
 
-# ===== DESCARGA =====
+# ===== DOWNLOAD =====
 @app.get("/download/{filename}")
 def download_video(filename: str):
     file_path = os.path.join(UPLOAD_DIR, filename)
