@@ -6,107 +6,82 @@ import cv2
 import shutil
 import uuid
 import os
-import time
-import threading
 
-app = FastAPI(title="Piero AI Video Upscaler")
+app = FastAPI()
 
-# CORS
+# Configuración de CORS para evitar bloqueos
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Carpetas
-UPLOAD_DIR = "uploads"
+# Carpeta de archivos - Usamos ruta absoluta para Render
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+UPLOAD_DIR = os.path.join(BASE_DIR, "uploads")
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
-# SERVIR ARCHIVOS (Orden importante)
-# 1. Montamos la carpeta de videos procesados para que sean accesibles vía URL
+# Montar la carpeta de subidas para que el navegador pueda VER los videos
 app.mount("/outputs", StaticFiles(directory=UPLOAD_DIR), name="outputs")
-# 2. Servir el frontend (asegúrate de que la carpeta ../frontend sea correcta)
-app.mount("/", StaticFiles(directory="../frontend", html=True), name="frontend")
-
-MAX_SIZE = 100 * 1024 * 1024  # 100MB
-FILE_LIFETIME = 3600  # 1 hora
-
-# Limpieza automática
-def cleanup_uploads():
-    while True:
-        now = time.time()
-        for f in os.listdir(UPLOAD_DIR):
-            path = os.path.join(UPLOAD_DIR, f)
-            if os.path.isfile(path) and now - os.path.getmtime(path) > FILE_LIFETIME:
-                try:
-                    os.remove(path)
-                except:
-                    pass
-        time.sleep(600)
-
-threading.Thread(target=cleanup_uploads, daemon=True).start()
 
 @app.post("/upscale")
 async def upscale_video(file: UploadFile = File(...)):
-    if not file.filename.lower().endswith(".mp4"):
-        raise HTTPException(status_code=400, detail="Only MP4 videos are supported")
+    # Validar formato
+    if not file.filename.lower().endswith((".mp4", ".mov", ".avi")):
+        raise HTTPException(status_code=400, detail="Formato no soportado")
 
-    input_path = os.path.join(UPLOAD_DIR, f"in_{uuid.uuid4()}.mp4")
+    # Generar nombres únicos
+    input_filename = f"in_{uuid.uuid4()}_{file.filename}"
     output_filename = f"out_{uuid.uuid4()}.mp4"
+    
+    input_path = os.path.join(UPLOAD_DIR, input_filename)
     output_path = os.path.join(UPLOAD_DIR, output_filename)
 
+    # Guardar archivo original
     with open(input_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
 
+    # Procesamiento con OpenCV
     cap = cv2.VideoCapture(input_path)
     if not cap.isOpened():
-        return {"error": "Cannot open video."}
+        return {"error": "No se pudo abrir el video"}
 
     fps = cap.get(cv2.CAP_PROP_FPS) or 30
     w = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
     h = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
+    # Definir tamaño 4K (o proporcional)
     target_w, target_h = 3840, 2160
-    aspect = w / h
+    
+    # Codec h264 para que el navegador lo reproduzca (CRÍTICO)
+    fourcc = cv2.VideoWriter_fourcc(*'avc1') 
+    out = cv2.VideoWriter(output_path, fourcc, fps, (target_w, target_h))
 
-    if aspect > 1:
-        new_w = target_w
-        new_h = int(target_w / aspect)
-    else:
-        new_h = target_h
-        new_w = int(target_h * aspect)
-
-    # CAMBIO CRÍTICO: Usar avc1 para compatibilidad con navegadores
-    fourcc = cv2.VideoWriter_fourcc(*'avc1')
-    out = cv2.VideoWriter(output_path, fourcc, fps, (new_w, new_h))
-
-    if not out.isOpened():
-        cap.release()
-        return {"error": "Cannot write output video"}
-
-    frames = 0
-    while cap.isOpened():
+    frames_processed = 0
+    # Limitamos a los primeros 150 frames para evitar que Render mate el proceso por falta de RAM
+    while frames_processed < 300: 
         ret, frame = cap.read()
         if not ret:
             break
-        resized = cv2.resize(frame, (new_w, new_h), interpolation=cv2.INTER_CUBIC)
+        
+        # Redimensionado
+        resized = cv2.resize(frame, (target_w, target_h), interpolation=cv2.INTER_LANCZOS4)
         out.write(resized)
-        frames += 1
+        frames_processed += 1
 
     cap.release()
     out.release()
 
-    if frames == 0:
-        return {"error": "Processing failed."}
+    # Limpiar el original para ahorrar espacio en Render
+    if os.path.exists(input_path):
+        os.remove(input_path)
 
-    # Retornamos la URL que apunta a la montura /outputs
+    # Devolvemos la URL relativa
     return {"video_url": f"/outputs/{output_filename}"}
 
-@app.get("/download/{filename}")
-def download_video(filename: str):
-    path = os.path.join(UPLOAD_DIR, filename)
-    if not os.path.exists(path):
-        raise HTTPException(status_code=404, detail="File not found")
-    return FileResponse(path, media_type="video/mp4")
+# Servir el frontend al final
+if os.path.exists("index.html"):
+    @app.get("/")
+    async def read_index():
+        return FileResponse("index.html")
