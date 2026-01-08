@@ -1,38 +1,26 @@
-from fastapi import FastAPI, UploadFile, File, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, HTMLResponse
-from fastapi.staticfiles import StaticFiles
 import cv2
-import shutil
-import uuid
 import os
+import uuid
+import shutil
+from fastapi import FastAPI, UploadFile, File
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import HTMLResponse
 
 app = FastAPI()
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-# --- RUTAS ABSOLUTAS ---
+# Configuración de rutas
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 FRONTEND_DIR = os.path.join(BASE_DIR, "frontend")
-# Guardamos en una carpeta llamada 'outputs' dentro de backend
 UPLOAD_DIR = os.path.join(BASE_DIR, "backend", "outputs")
 
-if not os.path.exists(UPLOAD_DIR):
-    os.makedirs(UPLOAD_DIR, exist_ok=True)
+os.makedirs(UPLOAD_DIR, exist_ok=True)
 
-# SERVIR ARCHIVOS
 app.mount("/descargas", StaticFiles(directory=UPLOAD_DIR), name="outputs")
 app.mount("/static", StaticFiles(directory=FRONTEND_DIR), name="static")
 
 @app.get("/", response_class=HTMLResponse)
 async def read_index():
-    index_path = os.path.join(FRONTEND_DIR, "index.html")
-    with open(index_path, "r", encoding="utf-8") as f:
+    with open(os.path.join(FRONTEND_DIR, "index.html"), "r", encoding="utf-8") as f:
         return f.read()
 
 @app.post("/upscale")
@@ -47,20 +35,18 @@ async def upscale_video(file: UploadFile = File(...)):
     cap = cv2.VideoCapture(in_path)
     fps = cap.get(cv2.CAP_PROP_FPS) or 30
     
-    # Redimensionamos a 4K
+    # Redimensionar a 4K (3840x2160)
     target_w, target_h = 3840, 2160
     
-    # CAMBIO IMPORTANTE: Usamos 'mp4v' que es más compatible con el entorno Linux de Render
-    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+    # PROBAMOS CON EL CODEC MÁS COMPATIBLE PARA LINUX/RENDER
+    fourcc = cv2.VideoWriter_fourcc(*'mp4v') 
     out = cv2.VideoWriter(out_path, fourcc, fps, (target_w, target_h))
 
     if not out.isOpened():
-        cap.release()
-        return {"error": "No se pudo inicializar el codificador de video en el servidor"}
+        return {"error": "Error interno: El servidor no tiene codecs de video instalados."}
 
     frames_count = 0
-    # Procesamos solo 90 frames (3 segundos aprox) para que Render no mate el proceso
-    while frames_count < 90:
+    while frames_count < 60: # Solo 2-3 segundos para probar que funcione
         ret, frame = cap.read()
         if not ret: break
         resized = cv2.resize(frame, (target_w, target_h), interpolation=cv2.INTER_LINEAR)
@@ -72,8 +58,8 @@ async def upscale_video(file: UploadFile = File(...)):
     
     if os.path.exists(in_path): os.remove(in_path)
 
-    # Verificamos si el archivo se creó realmente
-    if not os.path.exists(out_path) or os.path.getsize(out_path) == 0:
-        return {"error": "El video no se pudo generar correctamente"}
+    # Si el archivo mide 0 bytes, es que el encoder falló
+    if os.path.getsize(out_path) == 0:
+        return {"error": "El video se generó vacío. Revisa opencv-contrib-python-headless."}
 
     return {"video_url": f"/descargas/{out_name}"}
