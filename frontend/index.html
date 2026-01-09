@@ -1,332 +1,277 @@
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <link rel="icon" type="image/png" sizes="32x32" href="/static/logo.png">
     <title>PIERO AI PREMIER</title>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
-
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@800&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
-        /* --- ESTILOS BASE --- */
-        *{box-sizing:border-box;margin:0;padding:0;}
-        body{
-            font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background:#0a0a0a;
-            color:white;
-            transition:0.3s;
+        :root { 
+            --bg: #0d0d10; --text: #d1d1d6; --card: rgba(255,255,255,0.02); 
+            --border: rgba(255,255,255,0.1); --accent: #ffffff; 
+            --glow: rgba(255, 255, 255, 0.5);
         }
-        body.light{ background:#f5f5f5; color:#111; }
+        .light-mode { 
+            --bg: #f4f4f7; --text: #1d1d1f; --card: #ffffff; 
+            --border: #d2d2d7; --accent: #000000; 
+            --glow: rgba(0, 0, 0, 0.2);
+        }
 
-        /* --- HEADER CON ANIMACIÓN DE ESTRELLAS --- */
-        .header-box{
-            width:100%;
-            height:25vh;
-            background: linear-gradient(135deg,#1f1c2c,#928dab);
-            display:flex;
-            flex-direction:column;
-            align-items:center;
-            justify-content:center;
-            font-family: 'Montserrat', sans-serif;
-            font-size:6vh;
-            font-weight:700;
-            letter-spacing:2px;
-            color:#ffffff;
-            text-align:center;
-            position:relative;
-            overflow:hidden;
-            transition: transform 0.3s;
-            cursor:pointer;
+        *{box-sizing:border-box; margin:0; padding:0;}
+        body{ font-family:'Poppins', sans-serif; background: var(--bg); color: var(--text); transition: 0.4s; overflow-x: hidden; }
+        
+        /* --- TOP BAR --- */
+        .top-bar { 
+            position: fixed; top: 15px; width: 100%; display: flex; 
+            justify-content: space-between; padding: 0 25px; z-index: 100; 
         }
-        .header-box:hover{ transform: scale(1.02); }
-        .header-box::before{
-            content:"";
-            position:absolute;
-            top:0; left:0; width:200%; height:200%;
-            background:transparent url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200"><circle cx="10" cy="10" r="1.2" fill="%23ffffff"/><circle cx="50" cy="80" r="0.8" fill="%23ffffff"/><circle cx="120" cy="40" r="1.5" fill="%23ffffff"/><circle cx="170" cy="150" r="1" fill="%23ffffff"/><circle cx="60" cy="160" r="0.7" fill="%23ffffff"/><circle cx="180" cy="20" r="1.2" fill="%23ffffff"/><circle cx="90" cy="110" r="1" fill="%23ffffff"/><circle cx="30" cy="60" r="1.3" fill="%23ffffff"/><circle cx="140" cy="90" r="0.9" fill="%23ffffff"/><circle cx="20" cy="140" r="1.1" fill="%23ffffff"/></svg>') repeat;
-            animation: moveStars 60s linear infinite;
-            opacity:0.5;
-            pointer-events:none;
+        .control-item { display: flex; align-items: center; gap: 12px; font-size: 0.75rem; font-weight: 800; color: var(--text); letter-spacing: 1px; }
+        .switch { position: relative; display: inline-block; width: 48px; height: 24px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(128, 128, 128, 0.1); backdrop-filter: blur(8px);
+            transition: .4s; border-radius: 34px; border: 1px solid var(--border);
         }
-        .header-box:hover::before{ animation: moveStarsHover 10s linear infinite; }
-        @keyframes moveStars{ from{transform:translate(0,0);} to{transform:translate(-100px,-100px);} }
-        @keyframes moveStarsHover{ from{transform:translate(0,0);} to{transform:translate(-200px,-200px);} }
+        .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background-color: var(--accent); transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: rgba(128, 128, 128, 0.3); }
+        input:checked + .slider:before { transform: translateX(25px); }
 
-        /* --- DESCRIPCIÓN --- */
-        .description{
-            text-align:center;
-            font-family:'Poppins', sans-serif;
-            font-size:1em;
-            margin:40px auto 50px auto;
-            color:#fff;
-            max-width:800px;
-            padding: 0 20px;
+        /* --- HEADER CON ESTRELLAS NATURALES --- */
+        .header-box {
+            width: 100%; height: 32vh;
+            background: linear-gradient(-45deg, #020205, #0a0a1a, #050505, #0d1117);
+            background-size: 400% 400%; animation: gradientBG 12s ease infinite;
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Montserrat', sans-serif; font-size: 6vh; color: #fff;
+            position: relative; overflow: hidden; border-bottom: 1px solid var(--border);
+            transition: 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
+            cursor: pointer; user-select: none;
+            text-shadow: 0 0 20px rgba(255,255,255,0.3);
         }
-        body.light .description{ color:#111; }
+        .header-box:active { transform: scale(0.98); }
 
-        /* --- INTERRUPTORES --- */
-        .switches{
-            position:fixed;
-            top:15px;
-            width:100%;
-            display:flex;
-            justify-content:space-between;
-            padding:0 20px;
-            z-index:100;
+        /* Capa de Estrellas Naturales */
+        .header-box::before {
+            content: ""; position: absolute; width: 200%; height: 200%;
+            background-image: 
+                url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400"><circle cx="50" cy="50" r="1.2" fill="white" opacity="0.8"/><circle cx="150" cy="180" r="0.8" fill="white" opacity="0.4"/><circle cx="280" cy="70" r="1.5" fill="white" opacity="0.9"/><circle cx="350" cy="320" r="1" fill="white" opacity="0.6"/><circle cx="100" cy="350" r="0.7" fill="white" opacity="0.3"/><circle cx="220" cy="250" r="1.3" fill="white" opacity="0.7"/></svg>');
+            background-repeat: repeat;
+            animation: moveStars 100s linear infinite, twinkle 4s ease-in-out infinite alternate;
+            opacity: 0.7; pointer-events: none;
         }
-        .switch{
-            display:flex;
-            align-items:center;
-            font-weight:bold;
-            cursor:pointer;
-            font-size:0.9em;
-            color:white !important;
-        }
-        .switch input{display:none;}
-        .slider{
-            width:30px;height:16px;
-            background:#555;border-radius:34px;
-            margin-left:8px;position:relative;transition:0.4s;
-        }
-        .slider::before{
-            content:"";
-            position:absolute;width:12px;height:12px;
-            left:2px;bottom:2px;background:white;border-radius:50%;transition:0.4s;
-        }
-        input:checked + .slider{background:#00d2ff;}
-        input:checked + .slider::before{transform:translateX(14px);}
 
-        /* --- CONTENEDORES --- */
-        .main-container{
-            display:flex;
-            justify-content:center;
-            gap:20px;
-            margin-top:20px;
-            padding:0 20px;
-            flex-wrap:wrap;
+        @keyframes gradientBG { 0% {background-position:0% 50%} 50% {background-position:100% 50%} 100% {background-position:0% 50%} }
+        @keyframes moveStars { from {transform:translate(0,0)} to {transform:translate(-400px,-400px)} }
+        @keyframes twinkle { from { opacity: 0.4; } to { opacity: 0.9; } }
+
+        /* --- PASOS --- */
+        .description-container { text-align: center; margin: 40px auto 20px; max-width: 850px; padding: 0 20px; }
+        .steps-box { display: flex; justify-content: center; gap: 50px; margin-top: 35px; }
+        .step span { 
+            display: block; font-size: 1.6rem; font-weight: 800; color: var(--text); margin-bottom: 8px;
+            animation: neonGlow 3s ease-in-out infinite alternate;
         }
-        .video-box{
-            flex:1;
-            min-width:320px;
-            border-radius:15px;
-            padding:15px;
-            display:flex;
-            flex-direction:column;
-            align-items:center;
-            position:relative;
-            overflow:hidden;
-            transition:0.3s, box-shadow 0.3s;
-            background:#222;
-        }
-        body.light .video-box{ background:#ccc; }
-        .video-box h3{margin-bottom:15px; z-index:10;}
-        .video-box video{
-            width:100%;
-            border-radius:10px;
-            max-height:60vh;
-            object-fit:contain;
-            background: #000;
+        @keyframes neonGlow {
+            from { text-shadow: 0 0 5px var(--glow); opacity: 0.7; transform: scale(1); }
+            to { text-shadow: 0 0 15px var(--glow); opacity: 1; transform: scale(1.08); }
         }
 
         /* --- BOTONES --- */
-        .upload-btn, .process-btn, #downloadBtn {
-            padding:12px 25px;
-            border:none;
-            border-radius:25px;
-            font-weight:bold;
-            cursor:pointer;
-            transition:0.3s;
-            z-index:10;
+        .btn-anim { transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); cursor: pointer; }
+        .btn-anim:hover { transform: scale(1.1); }
+        .btn {
+            border: 1px solid var(--border); background: var(--card); color: var(--text);
+            padding: 12px 28px; border-radius: 10px; font-weight: 600; margin-top: 20px;
+            text-decoration: none; font-size: 13px; display: inline-block;
         }
-        .upload-btn{ background:#333; color:white; margin-top:10px; }
-        .upload-btn:hover{ transform:scale(1.05); box-shadow:0 0 15px rgba(255,255,255,0.1); }
-        
-        .process-btn{
-            margin:40px auto;
-            display:block;
-            padding:15px 40px;
-            background:#222;
-            color:white;
-            font-size:18px;
+        .process-btn { 
+            display: block; margin: 30px auto 60px; padding: 18px 85px; font-size: 1.1rem; 
+            border: 2px solid var(--accent); background: transparent; color: var(--accent); border-radius: 15px; font-weight: 800;
         }
-        .process-btn:hover:not(:disabled){
-            transform:scale(1.05);
-            box-shadow:0 0 20px rgba(100,100,100,0.4);
-        }
-        
-        #cancelBtn{ background:#aa2222 !important; margin-top:10px; }
+        .process-btn:hover { background: var(--accent); color: var(--bg); }
 
-        #downloadBtn{
-            display:none;
-            margin-top:15px;
-            background:#00d2ff;
-            color:#000;
-            width: 80%;
+        /* --- MAIN LAYOUT --- */
+        .main-container { display: flex; justify-content: center; gap: 30px; padding: 20px 40px; flex-wrap: wrap; }
+        .video-box {
+            flex: 1; min-width: 380px; border-radius: 24px; padding: 30px;
+            background: var(--card); border: 2px dashed var(--border);
+            display: flex; flex-direction: column; align-items: center; position: relative;
         }
-        #downloadBtn:hover{ transform:scale(1.03); box-shadow:0 0 15px rgba(0,210,255,0.5); }
+        img, video { width: 100%; border-radius: 12px; max-height: 40vh; object-fit: contain; display: none; margin-top: 15px; }
 
-        /* --- CARGA --- */
-        .loading-overlay{
-            position:absolute;
-            top:0; left:0; width:100%; height:100%;
-            background: rgba(10,10,10,0.6);
-            display:none;
-            flex-direction:column;
-            align-items:center;
-            justify-content:center;
-            backdrop-filter: blur(4px);
-            z-index:5;
+        .loading-overlay { 
+            position: absolute; top:0; left:0; width:100%; height:100%; 
+            background: rgba(0,0,0,0.92); display:none; flex-direction:column; 
+            align-items:center; justify-content:center; border-radius:24px; z-index:20; 
         }
-        .circle-loader{
-            width:50px;height:50px;
-            border:5px solid #fff;
-            border-top:5px solid #00d2ff;
-            border-radius:50%;
-            animation:spin 1s linear infinite;
-        }
-        @keyframes spin{to{transform:rotate(360deg);}}
+        .loader { width: 40px; height: 40px; border: 3px solid rgba(255,255,255,0.1); border-top-color: #fff; border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { to {transform: rotate(360deg);} }
 
-        footer{ text-align:center; margin:40px 0 20px 0; color:#aaa; font-size:0.9em; }
+        footer { text-align: center; padding: 60px 0; font-size: 0.8rem; opacity: 0.4; letter-spacing: 2px; }
     </style>
 </head>
 <body>
 
-<div class="switches">
-    <label class="switch"><span id="darkEmoji">🌙</span>
-        <input type="checkbox" id="darkSwitch">
-        <span class="slider"></span>
-    </label>
-    <label class="switch">EN/ES
-        <input type="checkbox" id="langSwitch">
-        <span class="slider"></span>
-    </label>
+<div class="top-bar">
+    <div class="control-item">
+        <span id="labelTheme">🌙</span>
+        <label class="switch"><input type="checkbox" id="themeToggle" onchange="toggleTheme()"><span class="slider"></span></label>
+    </div>
+    <div class="control-item">
+        <span id="labelLang">EN | ES</span>
+        <label class="switch"><input type="checkbox" id="langToggle" onchange="toggleLang()"><span class="slider"></span></label>
+    </div>
 </div>
 
-<div class="header-box" id="title">PIERO AI PREMIER</div>
+<div class="header-box" id="headerMain">PIERO AI PREMIER</div>
 
-<div class="description" id="descriptionText">Piero AI Premier uses advanced AI to upscale your videos to 4K quickly. Upload your MP4 file or drag it into the box labeled <strong>Original Video</strong>.</div>
+<div class="description-container">
+    <p id="txtDesc">Enhance your media using our advanced neural engine. Professional 4K quality in seconds.</p>
+    <div class="steps-box">
+        <div class="step"><span id="s1">01</span><p id="t1">Upload file</p></div>
+        <div class="step"><span id="s2">02</span><p id="t2">AI Processing</p></div>
+        <div class="step"><span id="s3">03</span><p id="t3">Download 4K</p></div>
+    </div>
+</div>
 
 <div class="main-container">
-    <div class="video-box" id="dropOriginal">
-        <h3 id="labelOriginal">Original Video</h3>
-        <video id="videoOriginal" controls style="display:none;"></video>
-        <button class="upload-btn" id="uploadBtn">Upload Video</button>
-        <button class="upload-btn" id="cancelBtn" style="display:none;">Cancel</button>
-        <input type="file" id="videoInput" accept="video/mp4" style="display:none;">
+    <div class="video-box">
+        <h3 id="txtOrig">Original</h3>
+        <img id="imgOrig"> <video id="vidOrig" controls></video>
+        <button class="btn btn-anim" onclick="document.getElementById('fileInp').click()" id="txtUp">Upload File</button>
+        <input type="file" id="fileInp" hidden accept="image/*,video/*">
     </div>
 
-    <div class="video-box" id="drop4k">
-        <h3 id="label4k">4K Video</h3>
-        <div class="loading-overlay" id="loadingOverlay">
-            <div class="circle-loader"></div>
-            <div id="progressText" style="margin-top:10px;">Processing...</div>
+    <div class="video-box">
+        <h3 id="txtRes">4K Result</h3>
+        <div class="loading-overlay" id="loader">
+            <div class="loader"></div>
+            <p id="txtProc" style="margin-top:15px; color:white; font-weight:600;">Processing AI...</p>
+            <button class="btn btn-anim" style="background:#ff3b3b; border:none; color:white; padding:10px 20px; border-radius:8px; margin-top:15px;" onclick="resetResult()" id="btnCancel">CANCEL</button>
         </div>
-        <video id="video4k" controls style="display:none;"></video>
-        <button id="downloadBtn">Download 4K Video</button>
+        <img id="img4k"> <video id="vid4k" controls></video>
+        <a id="downBtn" class="btn btn-anim" style="display:none; background: #28a745; color: white; border:none;">Download 4K</a>
     </div>
 </div>
 
-<button class="process-btn" id="processBtn">Scale to 4K</button>
+<button class="process-btn btn-anim" id="procBtn">Scale to 4K</button>
 
-<footer id="footerText">Created by Piero Pacheco © 2026</footer>
+<footer id="txtCreator">CREATED BY PIERO PACHECO © 2026</footer>
 
 <script>
-    const darkSwitch = document.getElementById("darkSwitch");
-    const darkEmoji = document.getElementById("darkEmoji");
-    const langSwitch = document.getElementById("langSwitch");
-    const uploadBtn = document.getElementById("uploadBtn");
-    const cancelBtn = document.getElementById("cancelBtn");
-    const videoInput = document.getElementById("videoInput");
-    const videoOriginal = document.getElementById("videoOriginal");
-    const processBtn = document.getElementById("processBtn");
-    const video4k = document.getElementById("video4k");
-    const loadingOverlay = document.getElementById("loadingOverlay");
-    const descriptionText = document.getElementById("descriptionText");
-    const downloadBtn = document.getElementById("downloadBtn");
-    const labelOriginal = document.getElementById("labelOriginal");
-    const label4k = document.getElementById("label4k");
-    const footerText = document.getElementById("footerText");
+    let cancelController = null;
+    const header = document.getElementById('headerMain');
 
-    // DARK MODE
-    darkSwitch.addEventListener("change", ()=>{
-        document.body.classList.toggle("light", darkSwitch.checked);
-        darkEmoji.textContent = darkSwitch.checked ? "☀️" : "🌙";
-    });
-
-    // IDIOMA (Incluye Footer y Etiquetas de Video)
-    langSwitch.addEventListener("change", ()=>{
-        const es = langSwitch.checked;
-        processBtn.textContent = es ? "Escalar a 4K" : "Scale to 4K";
-        uploadBtn.textContent = es ? "Subir Video" : "Upload Video";
-        cancelBtn.textContent = es ? "Cancelar" : "Cancel";
-        labelOriginal.textContent = es ? "Video Original" : "Original Video";
-        label4k.textContent = es ? "Video 4K" : "4K Video";
-        downloadBtn.textContent = es ? "Descargar Video 4K" : "Download 4K Video";
-        footerText.textContent = es ? "Creado por Piero Pacheco © 2026" : "Created by Piero Pacheco © 2026";
-        
-        descriptionText.innerHTML = es ? 
-            "Piero AI Premier utiliza IA avanzada para escalar tus videos a 4K rápidamente. Sube tu archivo MP4 o arrástralo al recuadro con el nombre <strong>Video Original</strong>." : 
-            "Piero AI Premier uses advanced AI to upscale your videos to 4K quickly. Upload your MP4 file or drag it into the box labeled <strong>Original Video</strong>.";
-    });
-
-    // MANEJO DE ARCHIVOS
-    function handleFile(file){
-        if(file){
-            videoOriginal.src = URL.createObjectURL(file);
-            videoOriginal.style.display="block";
-            uploadBtn.style.display="none";
-            cancelBtn.style.display="block";
-            const dt = new DataTransfer();
-            dt.items.add(file);
-            videoInput.files = dt.files;
+    // --- LÓGICA DEL HEADER (CLICK, CONTROL+CLICK, RUEDA) ---
+    header.addEventListener('mousedown', (e) => {
+        // Rueda del ratón (botón 1)
+        if (e.button === 1) {
+            e.preventDefault();
+            window.open(window.location.href, '_blank');
         }
+    });
+
+    header.addEventListener('click', (e) => {
+        // Control + Click o Meta (Mac) + Click
+        if (e.ctrlKey || e.metaKey) {
+            window.open(window.location.href, '_blank');
+        } else {
+            // Click normal: Actualiza la página
+            window.location.reload();
+        }
+    });
+
+    const langData = {
+        en: {
+            desc: "Enhance your media using our advanced neural engine. Professional 4K quality in seconds.",
+            t1: "Upload file", t2: "AI Processing", t3: "Download 4K",
+            orig: "Original", res: "4K Result", up: "Upload File",
+            proc: "Processing AI...", procBtn: "Scale to 4K", cancel: "CANCEL",
+            alert: "Select a file first"
+        },
+        es: {
+            desc: "Mejora tus archivos con nuestro motor neuronal avanzado. Calidad 4K profesional en segundos.",
+            t1: "Subir archivo", t2: "Procesando IA", t3: "Descargar 4K",
+            orig: "Original", res: "Resultado 4K", up: "Subir Archivo",
+            proc: "Procesando IA...", procBtn: "Escalar a 4K", cancel: "CANCELAR",
+            alert: "Selecciona un archivo primero"
+        }
+    };
+
+    function toggleTheme() {
+        const isLight = document.getElementById('themeToggle').checked;
+        document.body.classList.toggle('light-mode', isLight);
+        document.getElementById('labelTheme').innerText = isLight ? '☀️' : '🌙';
     }
 
-    uploadBtn.addEventListener("click", ()=>videoInput.click());
-    videoInput.addEventListener("change", ()=> handleFile(videoInput.files[0]));
-    cancelBtn.addEventListener("click", ()=> location.reload());
+    function toggleLang() {
+        const isEs = document.getElementById('langToggle').checked;
+        const lang = isEs ? 'es' : 'en';
+        const data = langData[lang];
+        document.getElementById('txtDesc').innerText = data.desc;
+        document.getElementById('t1').innerText = data.t1;
+        document.getElementById('t2').innerText = data.t2;
+        document.getElementById('t3').innerText = data.t3;
+        document.getElementById('txtOrig').innerText = data.orig;
+        document.getElementById('txtRes').innerText = data.res;
+        document.getElementById('txtUp').innerText = data.up;
+        document.getElementById('txtProc').innerText = data.proc;
+        document.getElementById('procBtn').innerText = data.procBtn;
+        document.getElementById('btnCancel').innerText = data.cancel;
+    }
 
-    // PROCESAR
-    processBtn.addEventListener("click", async()=>{
-        const file = videoInput.files[0];
-        if(!file) return alert(langSwitch.checked ? "Sube un video" : "Upload a video");
+    function resetResult() {
+        if (cancelController) cancelController.abort();
+        document.getElementById('loader').style.display = 'none';
+        document.getElementById('img4k').style.display = 'none';
+        document.getElementById('vid4k').style.display = 'none';
+        document.getElementById('downBtn').style.display = 'none';
+    }
 
-        processBtn.disabled = true;
-        loadingOverlay.style.display = "flex";
-        video4k.style.display = "none";
-        downloadBtn.style.display = "none";
+    document.getElementById('fileInp').onchange = e => {
+        resetResult();
+        const file = e.target.files[0];
+        if(!file) return;
+        const url = URL.createObjectURL(file);
+        document.getElementById('imgOrig').style.display = file.type.startsWith('image') ? 'block' : 'none';
+        document.getElementById('vidOrig').style.display = file.type.startsWith('video') ? 'block' : 'none';
+        if(file.type.startsWith('video')) document.getElementById('vidOrig').src = url;
+        else document.getElementById('imgOrig').src = url;
+    };
 
-        const fd = new FormData();
-        fd.append("file", file);
+    document.getElementById('procBtn').onclick = async () => {
+        const file = document.getElementById('fileInp').files[0];
+        if(!file) return alert("Select a file first");
+        
+        resetResult();
+        document.getElementById('loader').style.display = 'flex';
+        cancelController = new AbortController();
+        const fd = new FormData(); fd.append('file', file);
 
         try {
-            const res = await fetch("/upscale", { method: "POST", body: fd });
+            const res = await fetch('/upscale', { method: 'POST', body: fd, signal: cancelController.signal });
             const data = await res.json();
+            const ts = new Date().getTime();
+            const downBtn = document.getElementById('downBtn');
 
-            if(data.video_url){
-                const url = window.location.origin + data.video_url;
-                video4k.src = url;
-                video4k.style.display = "block";
-                video4k.load();
-                downloadBtn.style.display = "block";
-                downloadBtn.onclick = () => {
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = "PieroAI_4K.mp4";
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                };
+            if(data.type === "video") {
+                const v = document.getElementById('vid4k'); 
+                v.src = data.file_url + "?t="+ts; 
+                v.style.display='block'; v.load();
             } else {
-                alert("Error: " + data.error);
+                const i = document.getElementById('img4k'); 
+                i.src = data.file_url + "?t="+ts; 
+                i.style.display='block';
             }
-        } catch (e) {
-            alert("Error de conexión");
+            downBtn.href = data.file_url;
+            downBtn.setAttribute('download', data.filename || 'PieroAI_Result.4k');
+            downBtn.style.display = 'inline-block';
+        } catch(e) {
+            if(e.name !== 'AbortError') alert("Error: Process interrupted.");
         } finally {
-            loadingOverlay.style.display = "none";
-            processBtn.disabled = false;
+            document.getElementById('loader').style.display = 'none';
         }
-    });
-
-    document.getElementById("title").addEventListener("click", () => location.reload());
+    };
 </script>
 </body>
 </html>
