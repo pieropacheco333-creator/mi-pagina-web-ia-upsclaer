@@ -113,6 +113,5 @@ def serve_output(filename):
     return send_from_directory(OUTPUTS_DIR, filename)
 
 if __name__ == '__main__':
-    # El puerto lo asignará el servidor automáticamente
     port = int(os.environ.get("PORT", 5000))
-    app.run(host='0.0.0.0', port=port))
+    app.run(host='0.0.0.0', port=port)
