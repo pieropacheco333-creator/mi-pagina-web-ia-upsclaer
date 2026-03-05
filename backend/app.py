@@ -112,6 +112,7 @@ def upscale():
 def serve_output(filename):
     return send_from_directory(OUTPUTS_DIR, filename)
 
+
 if __name__ == '__main__':
     # Render asigna un puerto dinámico, esto lo captura:
     port = int(os.environ.get("PORT", 5000))
